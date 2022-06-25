@@ -1,0 +1,21 @@
+{
+    "header" : 
+    {
+        "platform" : "nutekt-digital",
+        "module" : "osc",
+        "api" : "1.1-0",
+        "dev_id" : 0,
+        "prg_id" : 0,
+        "version" : "0.1-0",
+        "name" : "Lyre 1",
+        "num_param" : 6,
+        "params" : [
+	    ["lfo1",0, 100, "%"],
+	    ["lfo2",0, 100, "%"],
+            ["wave fold", 0, 100, "%"],
+            ["fm tune", 0, 100, "%"],
+	    ["semi", 0, 48, "%"],
+            ["cent", 0, 100, "%"]
+          ]
+    }
+}
