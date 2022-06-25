@@ -2,7 +2,8 @@
 Lyra-8 style custom oscillator for korg nts-1 logue sdk
 
 Sine wave with FM
-hyper LFO (AND gate: high if lfo1 AND lfo2 are high) and single stage wave folder
+hyper LFO (AND gate: high if lfo1 AND lfo2 are high) and single stage wave folder.
+I wanted to put some feedback control in but I haven't figured out how to do it yet without the nts crashing as it starts to sound good :/
 
 knob A: FM depth
 knob B: LFO depth, ranges from 0 to 12 semitones
