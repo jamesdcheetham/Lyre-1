@@ -1,6 +1,5 @@
 #include "userosc.h"
 #include "math.h"
-//#include "usermodfx.h"
 #include "simplelfo.hpp"
 
 #include "Lyre.hpp"
@@ -30,7 +29,7 @@ void OSC_INIT(uint32_t platform, uint32_t api) {
 	carrierOscillator.fmDepth = 0.f;
   
 	modulatorOscillator.phase = 0.f;
-//	modulatorOscillator.feedback = 0.f;
+	carrierOscillator.feedback = 0.f;
 	modulatorOscillator.semitone = 0;
 	modulatorOscillator.cent = 0;
 	
@@ -67,16 +66,14 @@ void OSC_CYCLE(const user_osc_param_t * const params, int32_t *yn, const uint32_
 
   
   //get frequency of main oscillator
-  const float oscNote = ((params->pitch)>>8) + carrierOscillator.semitone - 24;
-  const float oscMod = (params->pitch + carrierOscillator.cent) & 0xFF;
+  const float oscNote = ((params->pitch)>>8) - 24;
+  const float oscMod = (params->pitch) & 0xFF;
   
   //compute phase increments for main oscillator (from freq)
   const float f0 = osc_notehzf(oscNote);
   const float f1 = osc_notehzf(oscNote+1);
   const float f = clipmaxf(linintf(oscMod * k_note_mod_fscale, f0, f1), k_note_max_hz);
   
-  //compute phase increments for FM oscillator (from note)
-//  const float w1 = osc_w0f_for_note(oscNote + modulatorOscillator.semitone, oscMod);  
 
    //get LFO values
 
@@ -100,11 +97,12 @@ void OSC_CYCLE(const user_osc_param_t * const params, int32_t *yn, const uint32_
 		float mainOsc;
 
 		// Main Oscillator
-		mainOsc = 0.5f * osc_sinf(carrierOscillator.phase) * (1.f + carrierOscillator.waveFold);
+		mainOsc = 0.5f * osc_sinf(carrierOscillator.phase) * (1.f + carrierOscillator.waveFold) * (1.f + mainOsc * carrierOscillator.feedback);
 
 		//FM oscillator
 		float fmOsc = osc_sinf(modulatorOscillator.phase);
 		const float w1 = (f * (1.f+(modulatorOscillator.semitone/100.f)) * hyperLFO()) * k_samplerate_recipf;
+
 		//fm oscillator set phase		
 		modulatorOscillator.phase += w1;
 		modulatorOscillator.phase -= (uint32_t)modulatorOscillator.phase;
@@ -113,10 +111,7 @@ void OSC_CYCLE(const user_osc_param_t * const params, int32_t *yn, const uint32_
 		// wavefolder to main out
 		const float audioOut = (mainOsc < -0.5f) ? -1.f - mainOsc : (mainOsc >  0.5f) ? 1.f - mainOsc: mainOsc;		
 
-		
-		//set feedback of fm oscillator, then set phase	
-//		const float w0 = (f * + (carrierOscillator.lfoDepth * hyperLFO() + fmOsc * carrierOscillator.fmDepth)) * k_samplerate_recipf; 
-		const float w0 = (f * hyperLFO() + (fmOsc * (carrierOscillator.fmDepth * (1 + lfoShape))/2.f)) * k_samplerate_recipf;
+		const float w0 = (f * (1.f +(carrierOscillator.semitone/100.f)) * hyperLFO() + (fmOsc * (carrierOscillator.fmDepth * (1 + lfoShape))/2.f)) * k_samplerate_recipf;
 		carrierOscillator.phase += w0;
 		carrierOscillator.phase -= (uint32_t)carrierOscillator.phase;
 		
@@ -153,14 +148,11 @@ void OSC_PARAM(uint16_t index, uint16_t value) {
   case k_user_osc_param_id4:
 	modulatorOscillator.semitone = value;
 	break;
-//  case k_user_osc_param_id4:
-//	carrierOscillator.octave = value * 12;
-//	break;
   case k_user_osc_param_id5:
 	carrierOscillator.semitone = value;
 	break;
   case k_user_osc_param_id6:
-	carrierOscillator.cent = value;
+	carrierOscillator.feedback = valf * 20.f;
 	break;	
    case k_user_osc_param_shape:
 	carrierOscillator.fmDepth = value * 10;
