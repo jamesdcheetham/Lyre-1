@@ -66,7 +66,7 @@ void OSC_CYCLE(const user_osc_param_t * const params, int32_t *yn, const uint32_
 
   
   //get frequency of main oscillator
-  const float oscNote = ((params->pitch)>>8) - 24;
+  const float oscNote = ((params->pitch)>>8);
   const float oscMod = (params->pitch) & 0xFF;
   
   //compute phase increments for main oscillator (from freq)
